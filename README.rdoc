@@ -1,0 +1,47 @@
+== Proper ActiveRecord Uniqueness Validations
+
+This is an attempt at getting non-racey uniqueness validations to work with
+ActiveRecord, this gem will monkey patch ActiveRecord's create_or_update
+method to catch exceptions triggered by unique index violations on the 
+database layer and add an error to the ActiveRecord instance in question
+when this happens.
+
+So whats happening is that we're just trying to insert or update the record
+in question and letting the database do it's work and reject the operation if
+a unique index constraint is violated.
+
+As a side effect, you can get rid of the regular uniqueness validations,
+losing potentially lots of database calls in the process.
+
+== Limitations
+- Only works with Postgresql so far, since thats the only database I use
+  for serious work nowadays. Patches welcome for other databases.
+
+- Strict Validations are not supported.
+
+- RSpecs model.should have(n).errors_on(:attribute) doesn't work; try using
+  model.errors.messages.keys.should include(:attribute) after a save operation.
+
+== Usage
+First, set up unique indexes for what you need kept unique (but you already had
+those, right?).
+
+Then, adjust the models in question as follows:
+
+class MyModel < ActiveRecord::Base
+  # Override create_or_update
+  include ProperUniquenessValidation
+
+  # Specify for each uniqueness index, which attribute should get an error
+  # attached to it. This is the easiest way of dealing with postgres' indexing
+  # possibilities such as functions etc.
+  uniqueness_error_attribute_for 'index_my_models_attribute', 
+                                 :attribute_to_add_error_to
+
+  # ...
+  # your other code here
+end
+
+You may need to adjust your tests/specs, since the errors will only get attached
+when the actual save takes place. Calling valid? will not work, unless you 
+keep your traditional uniqueness validations explicitly around.
