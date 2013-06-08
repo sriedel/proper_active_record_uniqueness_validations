@@ -1,5 +1,21 @@
 module ProperUniquenessValidation
-  UNIQUE_INDEX_VIOLATION_RE = %r{^DETAIL:\s+Key \((.*?)\)=\((.*?)\) already exists.$}m
+  UNIQUE_INDEX_VIOLATION_RE = %r{duplicate key value violates unique constraint "([^"]+)"}
+
+  def self.included( base )
+    base.extend ClassMethods
+  end
+
+  module ClassMethods
+    def uniqueness_error_attribute_for( index_name, attribute_name ) 
+      @_uniqueness_index_attribute_mapping ||= {}
+      @_uniqueness_index_attribute_mapping[index_name.to_sym] = attribute_name.to_sym
+    end
+
+    private
+    def _uniqueness_error_attribute_for( index_name )
+      @_uniqueness_index_attribute_mapping[index_name.to_sym]
+    end
+  end
 
   private
   def create_or_update
@@ -7,9 +23,9 @@ module ProperUniquenessValidation
   rescue ActiveRecord::RecordNotUnique => e
     logger.warn "Caught #{e.message}!"
     e.message.match( UNIQUE_INDEX_VIOLATION_RE ) do |match|
-      error_attribute = match[1].split(',', 2).first
+      attribute = self.class._uniqueness_error_attribute_for( match[1] )
 
-      self.errors.add( error_attribute.to_sym, :taken, :value => self.send( error_attribute.to_sym ) )
+      self.errors.add( attribute, :taken, :value => self.send( attribute ) )
     end
 
     return false
