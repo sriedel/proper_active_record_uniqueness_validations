@@ -25,7 +25,7 @@ module ProperUniquenessValidation
 
       if !attribute
         #TODO: Test this
-        logger.warn "Caught uniqueness exceptions but index '#{match[1]}' was not registered\nAdd a uniquness_error_attribute_for clause to your model #{self.class}!"
+        logger.warn "Caught uniqueness exceptions but index '#{match[1]}' was not registered\nAdd a \"uniquness_error_attribute_for 'index_name', :error_attribute_name\"\nclause to your model '#{self.class}'!"
         raise
       end
 

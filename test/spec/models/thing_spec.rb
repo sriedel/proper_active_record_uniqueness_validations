@@ -4,13 +4,15 @@ describe Thing do
   let( :a_valid_thing ) do
     Thing.new( :some_id     => 1,
                :name        => "foo",
-               :description => "bar" )
+               :description => "bar",
+               :unregistered => "fubar" )
   end
 
   let( :another_thing ) do
     Thing.new( :some_id     => 10,
                :name        => "foo_2000",
-               :description => "binford_9000" )
+               :description => "binford_9000",
+               :unregistered => "snafu" )
   end
 
   let( :a_widget_with_a_uniqueness_violation ) do
@@ -46,6 +48,27 @@ describe Thing do
       it "should not have inserted anything to the errors" do
         subject.save
         subject.errors.should be_empty
+      end
+    end
+
+    context "when violating an unregistered index" do
+      subject do
+        another_thing.unregistered = a_valid_thing.unregistered
+        another_thing
+      end
+
+      before( :each ) do
+        a_valid_thing.save
+      end
+
+      it "should raise an exception" do
+        expect { subject.save }.to raise_error( ActiveRecord::RecordNotUnique )
+      end
+
+      it "should not have stored the value in the database" do
+        expect do
+          subject.save rescue nil
+        end.to_not change { Thing.count }
       end
     end
 
@@ -134,6 +157,28 @@ describe Thing do
       it "should not have inserted anything to the errors" do
         subject.save
         subject.errors.should be_empty
+      end
+    end
+
+    context "when violating an unregistered index" do
+      subject { another_thing }
+
+      before( :each ) do
+        a_valid_thing.save
+        subject.save
+        subject.reload # grab new updated_at
+        subject.unregistered = a_valid_thing.unregistered
+      end
+
+      it "should raise an exception" do
+        expect { subject.save }.to raise_error( ActiveRecord::RecordNotUnique )
+      end
+
+      it "should not have stored the value in the database" do
+        expect do
+          subject.save rescue nil
+          subject.reload
+        end.to_not change { subject.updated_at }
       end
     end
 

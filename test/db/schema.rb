@@ -17,12 +17,14 @@ ActiveRecord::Schema.define(:version => 20130608160945) do
     t.integer  "some_id"
     t.text     "name"
     t.text     "description"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.text     "unregistered"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
   end
 
   add_index "things", ["name", "description"], :name => "index_things_on_name_and_description", :unique => true
   add_index "things", ["some_id"], :name => "index_things_on_some_id", :unique => true
+  add_index "things", ["unregistered"], :name => "index_things_on_unregistered", :unique => true
 
   create_table "widgets", :force => true do |t|
     t.integer  "some_id"
