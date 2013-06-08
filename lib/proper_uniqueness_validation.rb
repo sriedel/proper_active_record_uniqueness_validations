@@ -20,9 +20,14 @@ module ProperUniquenessValidation
   def create_or_update
     super
   rescue ActiveRecord::RecordNotUnique => e
-    logger.warn "Caught #{e.message}!"
     e.message.match( UNIQUE_INDEX_VIOLATION_RE ) do |match|
       attribute = self.class._uniqueness_error_attribute_for( match[1] )
+
+      if !attribute
+        #TODO: Test this
+        logger.warn "Caught uniqueness exceptions but index '#{match[1]}' was not registered\nAdd a uniquness_error_attribute_for clause to your model #{self.class}!"
+        raise
+      end
 
       self.errors.add( attribute, :taken, :value => self.send( attribute ) )
     end
