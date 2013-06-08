@@ -11,7 +11,6 @@ module ProperUniquenessValidation
       @_uniqueness_index_attribute_mapping[index_name.to_sym] = attribute_name.to_sym
     end
 
-    private
     def _uniqueness_error_attribute_for( index_name )
       @_uniqueness_index_attribute_mapping[index_name.to_sym]
     end
