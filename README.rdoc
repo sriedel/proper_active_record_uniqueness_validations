@@ -26,21 +26,25 @@ losing potentially lots of database calls in the process.
 First, set up unique indexes for what you need kept unique (but you already had
 those, right?).
 
+Add the gem to your Gemfile:
+  gem 'proper_active_record_uniqueness_validations', 
+       :require => 'proper_uniqueness_validation'
+
 Then, adjust the models in question as follows:
 
-class MyModel < ActiveRecord::Base
-  # Override create_or_update
-  include ProperUniquenessValidation
+  class MyModel < ActiveRecord::Base
+    # Override create_or_update
+    include ProperUniquenessValidation
 
-  # Specify for each uniqueness index, which attribute should get an error
-  # attached to it. This is the easiest way of dealing with postgres' indexing
-  # possibilities such as functions etc.
-  uniqueness_error_attribute_for 'index_my_models_attribute', 
-                                 :attribute_to_add_error_to
+    # Specify for each uniqueness index, which attribute should get an error
+    # attached to it. This is the easiest way of dealing with postgres' indexing
+    # possibilities such as functions etc.
+    uniqueness_error_attribute_for 'index_my_models_attribute', 
+                                   :attribute_to_add_error_to
 
-  # ...
-  # your other code here
-end
+    # ...
+    # your other code here
+  end
 
 You may need to adjust your tests/specs, since the errors will only get attached
 when the actual save takes place. Calling valid? will not work, unless you 
