@@ -1,28 +1,16 @@
 require 'spec_helper'
 
 describe Thing do
-  let( :a_valid_unsaved_thing ) do
+  let( :a_valid_thing ) do
     Thing.new( :some_id     => 1,
                :name        => "foo",
                :description => "bar" )
   end
 
-  let( :another_valid_unsaved_thing ) do
+  let( :another_thing ) do
     Thing.new( :some_id     => 10,
                :name        => "foo_2000",
                :description => "binford_9000" )
-  end
-
-  let( :a_thing_violating_a_single_column_constraint ) do
-    Thing.new( :some_id     => 1,
-               :name        => "baz",
-               :description => "quux" )
-  end
-
-  let( :a_thing_violating_a_multi_column_constraint ) do
-    Thing.new( :some_id     => 2,
-               :name        => "foo",
-               :description => "bar" )
   end
 
   let( :a_widget_with_a_uniqueness_violation ) do
@@ -41,7 +29,7 @@ describe Thing do
 
   describe "creating with #save" do
     context "without violating a uniqueness constraint" do
-      subject { a_valid_unsaved_thing }
+      subject { a_valid_thing }
 
       it "should not raise an exception" do
         expect { subject.save }.to_not raise_error
@@ -62,10 +50,13 @@ describe Thing do
     end
 
     context "when violating a single column uniqueness constraint" do
-      subject { a_thing_violating_a_single_column_constraint }
+      subject do
+        another_thing.some_id = a_valid_thing.some_id
+        another_thing
+      end
 
       before( :each ) do
-        a_valid_unsaved_thing.save
+        a_valid_thing.save
       end
 
       it "should not raise an exception" do
@@ -87,10 +78,14 @@ describe Thing do
     end
 
     context "when violating a multi-column uniqueness constraint" do
-      subject { a_thing_violating_a_multi_column_constraint }
+      subject do
+        another_thing.name = a_valid_thing.name
+        another_thing.description = a_valid_thing.description
+        another_thing
+      end
 
       before( :each ) do
-        a_valid_unsaved_thing.save
+        a_valid_thing.save
       end
 
       it "should not raise an exception" do
@@ -114,7 +109,7 @@ describe Thing do
 
   describe "updating with #save" do
     context "without violating a uniqueness constraint" do
-      subject { a_valid_unsaved_thing }
+      subject { a_valid_thing }
 
       before( :each ) do
         subject.save 
@@ -143,13 +138,13 @@ describe Thing do
     end
 
     context "when violating a single column uniqueness constraint" do
-      subject { another_valid_unsaved_thing }
+      subject { another_thing }
 
       before( :each ) do
-        a_valid_unsaved_thing.save
+        a_valid_thing.save
         subject.save
         subject.reload # grab new updated_at
-        subject.some_id = a_valid_unsaved_thing.some_id
+        subject.some_id = a_valid_thing.some_id
       end
 
       it "should not raise an exception" do
@@ -174,14 +169,14 @@ describe Thing do
     end
 
     context "when violating a multi-column uniqueness constraint" do
-      subject { another_valid_unsaved_thing }
+      subject { another_thing }
 
       before( :each ) do
-        a_valid_unsaved_thing.save
+        a_valid_thing.save
         subject.save
         subject.reload # grab new updated_at
-        subject.name = a_valid_unsaved_thing.name
-        subject.description = a_valid_unsaved_thing.description
+        subject.name = a_valid_thing.name
+        subject.description = a_valid_thing.description
       end
 
       it "should not raise an exception" do
