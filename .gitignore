@@ -13,3 +13,5 @@ test/db/*.sqlite3
 # Ignore all logfiles and tempfiles.
 test/log/*.log
 test/tmp
+
+*.gem
