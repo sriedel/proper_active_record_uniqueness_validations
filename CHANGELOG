@@ -1,0 +1,10 @@
+0.1.2
+- Drop pg version in gem dependencies
+- Add CHANGELOG
+
+0.1.1
+- Be more defensive about non-registered indexes that could raise a violation
+  error
+
+0.1.0
+- First version
