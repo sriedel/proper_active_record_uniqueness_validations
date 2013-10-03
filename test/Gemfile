@@ -9,6 +9,7 @@ gem 'pg'
 
 gem 'rspec-rails', :group => :test
 gem 'database_cleaner', :group => :test
+gem 'byebug', :group => :test
 
 
 
