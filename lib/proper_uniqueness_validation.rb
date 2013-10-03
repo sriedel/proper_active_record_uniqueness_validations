@@ -1,8 +1,20 @@
 module ProperUniquenessValidation
-  UNIQUE_INDEX_VIOLATION_RE = %r{duplicate key value violates unique constraint "([^"]+)"}
-
   def self.included( base )
     base.extend ClassMethods
+  end
+
+  def self.extract_index_name_from_exception( connection, exception )
+    case connection
+      when ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
+        extract_index_name_from_postgres_exception( exception )
+
+      else raise exception
+    end
+  end
+
+  def self.extract_index_name_from_postgres_exception( exception )
+    match = exception.original_exception.result.error_field( PGresult::PG_DIAG_MESSAGE_PRIMARY ).match(/"([^"]+)"/ )
+    match[1]
   end
 
   module ClassMethods
@@ -20,17 +32,19 @@ module ProperUniquenessValidation
   def create_or_update
     super
   rescue ActiveRecord::RecordNotUnique => e
-    e.message.match( UNIQUE_INDEX_VIOLATION_RE ) do |match|
-      attribute = self.class._uniqueness_error_attribute_for( match[1] )
+    klass = self.class
+    raise unless klass.respond_to?( :connection )
 
-      if !attribute
-        #TODO: Test this
-        logger.warn "Caught uniqueness exceptions but index '#{match[1]}' was not registered\nAdd a \"uniquness_error_attribute_for 'index_name', :error_attribute_name\"\nclause to your model '#{self.class}'!"
-        raise
-      end
+    index_name = ProperUniquenessValidation.extract_index_name_from_exception( klass.connection, e )
+    attribute = klass._uniqueness_error_attribute_for( index_name )
 
-      self.errors.add( attribute, :taken, :value => self.send( attribute ) )
+    if !attribute
+      #TODO: Test this
+      logger.warn "Caught uniqueness exceptions but index '#{index_name}' was not registered\nAdd a \"uniqueness_error_attribute_for 'index_name', :error_attribute_name\"\nclause to your model '#{klass}'!"
+      raise
     end
+
+    self.errors.add( attribute, :taken, :value => self.send( attribute ) )
 
     return false
   end
