@@ -31,7 +31,8 @@ module ProperUniquenessValidation
   private
   def create_or_update
     super
-  rescue ActiveRecord::RecordNotUnique => e
+  rescue ActiveRecord::RecordNotUnique,
+         PG::UniqueViolation => e
     klass = self.class
     raise unless klass.respond_to?( :connection )
 
