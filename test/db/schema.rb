@@ -9,29 +9,32 @@
 # from scratch. The latter is a flawed and unsustainable approach (the more migrations
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
-# It's strongly recommended to check this file into your version control system.
+# It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130608160945) do
+ActiveRecord::Schema.define(version: 20130608160945) do
 
-  create_table "things", :force => true do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "things", force: true do |t|
     t.integer  "some_id"
     t.text     "name"
     t.text     "description"
     t.text     "unregistered"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
-  add_index "things", ["name", "description"], :name => "index_things_on_name_and_description", :unique => true
-  add_index "things", ["some_id"], :name => "index_things_on_some_id", :unique => true
-  add_index "things", ["unregistered"], :name => "index_things_on_unregistered", :unique => true
+  add_index "things", ["name", "description"], name: "index_things_on_name_and_description", unique: true, using: :btree
+  add_index "things", ["some_id"], name: "index_things_on_some_id", unique: true, using: :btree
+  add_index "things", ["unregistered"], name: "index_things_on_unregistered", unique: true, using: :btree
 
-  create_table "widgets", :force => true do |t|
+  create_table "widgets", force: true do |t|
     t.integer  "some_id"
     t.string   "name"
     t.string   "description"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
 end

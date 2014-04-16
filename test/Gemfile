@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.13'
+gem 'rails', '4.0.4'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -10,7 +10,7 @@ gem 'pg'
 gem 'rspec-rails', :group => :test
 gem 'database_cleaner', :group => :test
 gem 'byebug', :group => :test
-
+gem 'protected_attributes'
 
 
 # To use ActiveModel has_secure_password
